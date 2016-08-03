@@ -8,7 +8,7 @@ object SparkApp {
     val conf = new SparkConf()
     conf.setAppName("SparkApp").setMaster("local")
 
-    var mlModelKind = "naive"
+    var jobKind = "MySql"
 
     if (args.isEmpty) {
       conf.setAppName("SparkApp").setMaster("local")
@@ -26,17 +26,21 @@ object SparkApp {
     var readJsonFileInfo = "input/spam"
     val jsonRDD = sc.textFile(readJsonFileInfo)
 
-    if (mlModelKind.equals("naive")) {
+    if (jobKind.equals("naive")) {
       val naiveBayesExample = new NaiveBayesExample
       naiveBayesExample.runNaiveBayesModel(sc, jsonRDD)
-      
-    } else if (mlModelKind.equals("logisticRegression")) {
+
+    } else if (jobKind.equals("logisticRegression")) {
       val logisticRegressionExample = new LogisticRegressionExample
       logisticRegressionExample.runLogisticRegression(sc, jsonRDD)
-      
-    } else if (mlModelKind.equals("TFIDF")) {
+
+    } else if (jobKind.equals("TFIDF")) {
       val tFIDFExample = new TFIDFExample
       tFIDFExample.runTFIDF(sc, jsonRDD)
+
+    } else if (jobKind.equals("MySql")) {
+      val mySqlExample = new MySqlExample
+      mySqlExample.runMySql(sc)
       
     }
 
