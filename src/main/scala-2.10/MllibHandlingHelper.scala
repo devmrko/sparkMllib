@@ -3,6 +3,7 @@ import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.feature.HashingTF
 import org.apache.spark.mllib.linalg.Vector
 import org.apache.spark.mllib.classification.{ NaiveBayes, NaiveBayesModel }
+import org.apache.spark.mllib.classification.LogisticRegressionWithSGD
 
 class MllibHandlingHelper(numFeaturesVal: Int) {
   val tf = new HashingTF(numFeatures = numFeaturesVal)
@@ -38,4 +39,12 @@ class MllibHandlingHelper(numFeaturesVal: Int) {
     println(">>>>> getNaiveBayesModel >>>>> accuracy: " + accuracy)
     model
   }
+  
+  def getLogisticRegressionModel(trainData: RDD[LabeledPoint]) = {
+	  println(">>>>> getLogisticRegressionModel >>>>>")
+	  val lrLearner = new LogisticRegressionWithSGD()
+    val model = lrLearner.run(trainData)
+    model
+  }
+  
 }
