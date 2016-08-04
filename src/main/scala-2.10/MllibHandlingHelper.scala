@@ -28,7 +28,7 @@ class MllibHandlingHelper(numFeaturesVal: Int) {
     trainingData.cache()
   }
 
-  def getNaiveBayesModel(trainningRatio: Double, seedVal: Long, trainData: RDD[LabeledPoint]) = {
+  def getNaiveBayesModel(trainningRatio: Double, seedVal: Long, trainData: RDD[LabeledPoint]): NaiveBayesModel = {
 	  println(">>>>> getNaiveBayesModel >>>>>")
     val splits = trainData.randomSplit(Array(trainningRatio, (1 - trainningRatio)), seed = seedVal)
     val training = splits(0)

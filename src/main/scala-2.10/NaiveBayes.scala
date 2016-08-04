@@ -1,6 +1,9 @@
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
+import java.lang.Boolean
+import org.apache.spark.mllib.classification.{NaiveBayes, NaiveBayesModel}
+import org.apache.spark.mllib.classification.NaiveBayesModel
 
 object NaiveBayesApp {
 
@@ -22,7 +25,7 @@ object NaiveBayesApp {
     import sqlContext.implicits._
 
     val dataHandlingHelper = new DataHandlingHelper
-    
+
     var readJsonFileInfo = "input/spam"
     val jsonRDD = sc.textFile(readJsonFileInfo)
     val spamRDD = jsonRDD.filter(line => line.contains("spam"))
@@ -41,54 +44,80 @@ object NaiveBayesApp {
 }
 
 class NaiveBayesExample {
-  
-  def runNaiveBayesModel(sc: SparkContext, spamIterable: Iterable[String], hamIterable: Iterable[String]) {
-    
-    val dataHandlingHelper = new DataHandlingHelper
 
-    println(">>>>> spam >>>>>")
-    spamIterable.foreach(println)
+  def createNaiveBayesModel(sc: SparkContext, mllibHandlingHelper: MllibHandlingHelper, 
+      spamIterable: Iterable[String], hamIterable: Iterable[String], trainningRatio: Double, 
+      seedVal: Long, logBool: Boolean): NaiveBayesModel = {
 
-    println(">>>>> ham >>>>>")
-    hamIterable.foreach(println)
+    println(">>>>> createNaiveBayesModel >>>>>")
 
     // Naive bayes model
-    val numFeatures = 1000
-    val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
+    val dataHandlingHelper = new DataHandlingHelper
+
+    if (logBool) {
+      println(">>>>> spam >>>>>")
+      spamIterable.foreach(println)
+
+      println(">>>>> ham >>>>>")
+      hamIterable.foreach(println)
+
+    }
 
     val spamFeatures = mllibHandlingHelper.getFeatures(spamIterable)
     val hamFeatures = mllibHandlingHelper.getFeatures(hamIterable)
 
-    println(">>>>> spamFeatures >>>>>")
-    spamFeatures.foreach(println)
+    if (logBool) {
+      println(">>>>> spamFeatures >>>>>")
+      spamFeatures.foreach(println)
 
-    println(">>>>> hamFeatures >>>>>")
-    hamFeatures.foreach(println)
+      println(">>>>> hamFeatures >>>>>")
+      hamFeatures.foreach(println)
+
+    }
 
     val spamLabeledPoint = mllibHandlingHelper.getIterableLabelpoint(0, spamFeatures)
     val hamLabeledPoint = mllibHandlingHelper.getIterableLabelpoint(1, hamFeatures)
 
-    println(">>>>> positiveExamples >>>>>")
-    spamLabeledPoint.foreach(println)
+    if (logBool) {
+      println(">>>>> positiveExamples >>>>>")
+      spamLabeledPoint.foreach(println)
 
-    println(">>>>> negativeExamples >>>>>")
-    hamLabeledPoint.foreach(println)
+      println(">>>>> negativeExamples >>>>>")
+      hamLabeledPoint.foreach(println)
+
+    }
 
     val spamLabeledPointRDD = dataHandlingHelper.convertListToRDD(sc, spamLabeledPoint)
     val hamLabeledPointRDD = dataHandlingHelper.convertListToRDD(sc, hamLabeledPoint)
 
     val trainingData = mllibHandlingHelper.getProcessTrainningData(spamLabeledPointRDD, hamLabeledPointRDD)
-    val naiveBayesTrainedModel = mllibHandlingHelper.getNaiveBayesModel(0.7, 1100L, trainingData)
+    mllibHandlingHelper.getNaiveBayesModel(trainningRatio, seedVal, trainingData)
 
-    val spamTestExampleVector01 = mllibHandlingHelper.getSingleVector("O M G GET cheap stuff by sending money to ...")
-    val spamTestExampleVector02 = mllibHandlingHelper.getSingleVector("URGENT! Your Mobile No...")
-    val hamTestExampleVector01 = mllibHandlingHelper.getSingleVector("Hi Dad, I started studying Spark the other ...")
-    val hamTestExampleVector02 = mllibHandlingHelper.getSingleVector("Hi Dad, I have cheap stuff by sending money ...")
+  }
 
-    println(s"Prediction for positive test example: ${naiveBayesTrainedModel.predict(spamTestExampleVector01)}")
-    println(s"Prediction for negative test example: ${naiveBayesTrainedModel.predict(hamTestExampleVector01)}")
-    println(s"Prediction for another negative test example: ${naiveBayesTrainedModel.predict(spamTestExampleVector02)}")
-    println(s"Prediction for another positive test example: ${naiveBayesTrainedModel.predict(hamTestExampleVector02)}")
+  def testNaiveBayesModel(mllibHandlingHelper: MllibHandlingHelper, 
+      naiveBayesTrainedModel: NaiveBayesModel, testString: String): Double = {
+    val testVector = mllibHandlingHelper.getSingleVector(testString)
+    val result = naiveBayesTrainedModel.predict(testVector)
+    println(s"Prediction for test example: ${result}")
+    result
+  }
+
+  def runNaiveBayesModel(sc: SparkContext, spamIterable: Iterable[String], hamIterable: Iterable[String]) {
+
+    val numFeatures = 1000
+    val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
+    val naiveBayesTrainedModel = createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, true)
+
+    val testSpamString01 = "O M G GET cheap stuff by sending money to ..."
+    val testSpamString02 = "URGENT! Your Mobile No..."
+    val testHamString01 = "Hi Dad, I started studying Spark the other ..."
+    val testHamString02 = "Hi Dad, I have cheap stuff by sending money ..."
+
+    testNaiveBayesModel(mllibHandlingHelper, naiveBayesTrainedModel, testSpamString01)
+    testNaiveBayesModel(mllibHandlingHelper, naiveBayesTrainedModel, testSpamString02)
+    testNaiveBayesModel(mllibHandlingHelper, naiveBayesTrainedModel, testHamString01)
+    testNaiveBayesModel(mllibHandlingHelper, naiveBayesTrainedModel, testHamString02)
 
     //    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel")
     //    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel")
