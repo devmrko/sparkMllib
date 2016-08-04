@@ -21,11 +21,19 @@ object NaiveBayesApp {
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
     import sqlContext.implicits._
 
+    val dataHandlingHelper = new DataHandlingHelper
+    
     var readJsonFileInfo = "input/spam"
     val jsonRDD = sc.textFile(readJsonFileInfo)
+    val spamRDD = jsonRDD.filter(line => line.contains("spam"))
+    val hamRDD = jsonRDD.filter(line => line.contains("ham"))
+    val spamIterable = dataHandlingHelper.convertRDDToIterable(spamRDD)
+    val hamIterable = dataHandlingHelper.convertRDDToIterable(hamRDD)
+    val spamSecondColumnIterable = dataHandlingHelper.getSplitDataUsingIterable(spamIterable, "\t", 1);
+    val hamSecondColumnIterable = dataHandlingHelper.getSplitDataUsingIterable(hamIterable, "\t", 1);
 
     val naiveBayesExample = new NaiveBayesExample
-    naiveBayesExample.runNaiveBayesModel(sc, jsonRDD)
+    naiveBayesExample.runNaiveBayesModel(sc, spamSecondColumnIterable, hamSecondColumnIterable)
 
     sc.stop()
   }
@@ -34,30 +42,22 @@ object NaiveBayesApp {
 
 class NaiveBayesExample {
   
-  def runNaiveBayesModel(sc: SparkContext, jsonRDD: RDD[String]) {
+  def runNaiveBayesModel(sc: SparkContext, spamIterable: Iterable[String], hamIterable: Iterable[String]) {
     
-    val spamRDD = jsonRDD.filter(line => line.contains("spam"))
-    val hamRDD = jsonRDD.filter(line => line.contains("ham"))
-
     val dataHandlingHelper = new DataHandlingHelper
-    val spamIterable = dataHandlingHelper.convertRDDToIterable(spamRDD)
-    val hamIterable = dataHandlingHelper.convertRDDToIterable(hamRDD)
-
-    val spamSecondColumnIterable = dataHandlingHelper.getSplitDataUsingIterable(spamIterable, "\t", 1);
-    val hamSecondColumnIterable = dataHandlingHelper.getSplitDataUsingIterable(hamIterable, "\t", 1);
 
     println(">>>>> spam >>>>>")
-    spamSecondColumnIterable.foreach(println)
+    spamIterable.foreach(println)
 
     println(">>>>> ham >>>>>")
-    hamSecondColumnIterable.foreach(println)
+    hamIterable.foreach(println)
 
     // Naive bayes model
     val numFeatures = 1000
     val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
 
-    val spamFeatures = mllibHandlingHelper.getFeatures(spamSecondColumnIterable)
-    val hamFeatures = mllibHandlingHelper.getFeatures(hamSecondColumnIterable)
+    val spamFeatures = mllibHandlingHelper.getFeatures(spamIterable)
+    val hamFeatures = mllibHandlingHelper.getFeatures(hamIterable)
 
     println(">>>>> spamFeatures >>>>>")
     spamFeatures.foreach(println)

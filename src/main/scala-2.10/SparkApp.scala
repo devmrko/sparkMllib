@@ -20,11 +20,19 @@ object SparkApp {
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
     import sqlContext.implicits._
 
+    val dataHandlingHelper = new DataHandlingHelper
+    
     var readJsonFileInfo = "input/spam"
     val jsonRDD = sc.textFile(readJsonFileInfo)
+    val spamRDD = jsonRDD.filter(line => line.contains("spam"))
+    val hamRDD = jsonRDD.filter(line => line.contains("ham"))
+    val spamIterable = dataHandlingHelper.convertRDDToIterable(spamRDD)
+    val hamIterable = dataHandlingHelper.convertRDDToIterable(hamRDD)
+    val spamSecondColumnIterable = dataHandlingHelper.getSplitDataUsingIterable(spamIterable, "\t", 1);
+    val hamSecondColumnIterable = dataHandlingHelper.getSplitDataUsingIterable(hamIterable, "\t", 1);
 
     val naiveBayesExample = new NaiveBayesExample
-    naiveBayesExample.runNaiveBayesModel(sc, jsonRDD)
+    naiveBayesExample.runNaiveBayesModel(sc, spamSecondColumnIterable, hamSecondColumnIterable)
 
     sc.stop()
   }
