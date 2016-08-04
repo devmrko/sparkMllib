@@ -99,6 +99,7 @@ class NaiveBayesExample {
       naiveBayesTrainedModel: NaiveBayesModel, testString: String): Double = {
     val testVector = mllibHandlingHelper.getSingleVector(testString)
     val result = naiveBayesTrainedModel.predict(testVector)
+    println(s"Test example: ${testString}")
     println(s"Prediction for test example: ${result}")
     result
   }
