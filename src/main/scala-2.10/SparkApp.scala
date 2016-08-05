@@ -86,7 +86,7 @@ object SparkApp {
     }
 
     val naiveBayesExample = new NaiveBayesExample
-    naiveBayesExample.runNaiveBayesModel(sc, normalSentense, spamSentense)
+    naiveBayesExample.runNaiveBayesModelForPjt(sc, normalSentense, spamSentense)
 
     /*
     var readJsonFileInfo = "input/spam"
