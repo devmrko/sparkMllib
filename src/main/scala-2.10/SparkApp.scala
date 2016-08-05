@@ -31,7 +31,7 @@ object SparkApp {
     query += "order by count(*) desc "
     query += "limit 500 "
 
-    var distinctQuery = "SELECT	url FROM blogContentsInfo "
+    var distinctQuery = "SELECT	url FROM blogContentsInfo WHERE job_id = "
     var getSingleUrlContentsQuery = "SELECT	name FROM result "
     getSingleUrlContentsQuery += "WHERE type not in ('SF', 'SN', 'JKB', 'EC', 'ETM', 'JKS', 'JX', 'JKO', 'JKG', 'SSO') "
     getSingleUrlContentsQuery += "AND url = "
@@ -52,21 +52,43 @@ object SparkApp {
     val statement = mySqlConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
     //    val statement = mySqlConn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)
 
+    val normalSentense: Iterable[String] = Nil
+    val spamSentense: Iterable[String] = Nil
+    
     try {
-      val prep = mySqlConn.prepareStatement(distinctQuery)
+      val prep = mySqlConn.prepareStatement(distinctQuery + "'1'")
       val resultSet = prep.executeQuery()
-
+      
       val df = sqlContext.read.parquet("seunjeonResult.parquet")
       df.registerTempTable("result")
       while (resultSet.next) {
         val baseDf = sqlContext.sql(getSingleUrlContentsQuery + "'" + resultSet.getString("url") + "'").toDF()
-        println(baseDf.map(elem => elem.get(0) + " ").reduce(_ + _))
+        normalSentense ++ baseDf.map(elem => elem.get(0) + " ").reduce(_ + _)
       }
 
     } finally {
       mySqlConn.close
 
     }
+    
+    try {
+      val prep = mySqlConn.prepareStatement(distinctQuery + "'2'")
+      val resultSet = prep.executeQuery()
+      
+      val df = sqlContext.read.parquet("spamResult.parquet")
+      df.registerTempTable("result")
+      while (resultSet.next) {
+        val baseDf = sqlContext.sql(getSingleUrlContentsQuery + "'" + resultSet.getString("url") + "'").toDF()
+        spamSentense ++ baseDf.map(elem => elem.get(0) + " ").reduce(_ + _)
+      }
+
+    } finally {
+      mySqlConn.close
+
+    }
+
+    val naiveBayesExample = new NaiveBayesExample
+    naiveBayesExample.runNaiveBayesModel(sc, normalSentense, spamSentense)
 
     /*
     var readJsonFileInfo = "input/spam"

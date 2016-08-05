@@ -123,4 +123,14 @@ class NaiveBayesExample {
     //    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel")
     //    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel")
   }
+  
+  def runNaiveBayesModelForPjt(sc: SparkContext, spamIterable: Iterable[String], hamIterable: Iterable[String]) {
+
+    val numFeatures = 1000
+    val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
+    val naiveBayesTrainedModel = createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, false)
+
+    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel")
+    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel")
+  }
 }

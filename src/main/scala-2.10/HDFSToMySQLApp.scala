@@ -23,7 +23,7 @@ object HDFSToMySQLApp {
 
     val dataHandlingHelper = new DataHandlingHelper
 
-    val df = sqlContext.read.parquet("seunjeonResult.parquet")
+    val df = sqlContext.read.parquet("spamResult.parquet")
     df.registerTempTable("result")
 
     var query = "SELECT	name, type, count(*) "
@@ -55,7 +55,7 @@ object HDFSToMySQLApp {
       sqlContext.sql(distinctQuery).collect().foreach(x => {
         val queryStmt = "INSERT INTO blogContentsInfo (job_id, url, reg_id, reg_date) VALUES (?, ?, ?, now()) "
         val prep = mySqlConn.prepareStatement(queryStmt)
-        prep.setString(1, "1")
+        prep.setString(1, "2")
         prep.setString(2, x.toString().replace("[", "").replace("]", ""))
         prep.setString(3, "system")
         prep.executeUpdate
