@@ -108,7 +108,7 @@ class NaiveBayesExample {
 
     val numFeatures = 1000
     val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
-    val naiveBayesTrainedModel = createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, true)
+    val naiveBayesTrainedModel = createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, false)
 
     val testSpamString01 = "O M G GET cheap stuff by sending money to ..."
     val testSpamString02 = "URGENT! Your Mobile No..."

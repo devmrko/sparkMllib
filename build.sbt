@@ -20,7 +20,8 @@ libraryDependencies ++= Seq(
   "org.apache.hadoop" % "hadoop-client" % "2.4.0" % "provided" excludeAll(
     ExclusionRule(organization = "javax.servlet")
   ),
-  "mysql" % "mysql-connector-java" % "5.1.38"
+  "mysql" % "mysql-connector-java" % "5.1.38",
+  "com.typesafe.slick" % "slick_2.10" % "3.1.1"
 ).map(_.exclude("commons-logging", "commons-logging")
 	   .exclude("org.slf4j", "org.slf4j"))
 
