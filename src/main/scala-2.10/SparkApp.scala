@@ -36,6 +36,10 @@ object SparkApp {
     getSingleUrlContentsQuery += "WHERE type not in ('SF', 'SN', 'JKB', 'EC', 'ETM', 'JKS', 'JX', 'JKO', 'JKG', 'SSO') "
     getSingleUrlContentsQuery += "AND url = "
 
+    var getSingleUrlContentsQueryForSpam = "SELECT	name FROM spam "
+    getSingleUrlContentsQueryForSpam += "WHERE type not in ('SF', 'SN', 'JKB', 'EC', 'ETM', 'JKS', 'JX', 'JKO', 'JKG', 'SSO') "
+    getSingleUrlContentsQueryForSpam += "AND url = "
+    
     val mysqlUrl = "jdbc:mysql://192.168.10.33/master";
     val userName = "hadoop"
     val passwd = "hadoop"
@@ -54,11 +58,11 @@ object SparkApp {
 
     val normalSentense: Iterable[String] = Nil
     val spamSentense: Iterable[String] = Nil
-    
+
     try {
       val prep = mySqlConn.prepareStatement(distinctQuery + "'1'")
       val resultSet = prep.executeQuery()
-      
+
       val df = sqlContext.read.parquet("seunjeonResult.parquet")
       df.registerTempTable("result")
       while (resultSet.next) {
@@ -66,19 +70,13 @@ object SparkApp {
         normalSentense ++ baseDf.map(elem => elem.get(0) + " ").reduce(_ + _)
       }
 
-    } finally {
-      mySqlConn.close
+      val spamPrep = mySqlConn.prepareStatement(distinctQuery + "'2'")
+      val spamResultSet = spamPrep.executeQuery()
 
-    }
-    
-    try {
-      val prep = mySqlConn.prepareStatement(distinctQuery + "'2'")
-      val resultSet = prep.executeQuery()
-      
-      val df = sqlContext.read.parquet("spamResult.parquet")
-      df.registerTempTable("result")
-      while (resultSet.next) {
-        val baseDf = sqlContext.sql(getSingleUrlContentsQuery + "'" + resultSet.getString("url") + "'").toDF()
+      val spamDf = sqlContext.read.parquet("spamResult.parquet")
+      spamDf.registerTempTable("spam")
+      while (spamResultSet.next) {
+        val baseDf = sqlContext.sql(getSingleUrlContentsQueryForSpam + "'" + spamResultSet.getString("url") + "'").toDF()
         spamSentense ++ baseDf.map(elem => elem.get(0) + " ").reduce(_ + _)
       }
 
