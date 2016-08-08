@@ -23,37 +23,14 @@ object MySqlApp {
     var readJsonFileInfo = "input/spam"
     val jsonRDD = sc.textFile(readJsonFileInfo)
 
-    val mySqlExample = new MySqlExample
-    mySqlExample.runMySql(sc)
+    val mySqlHelper = new MySqlHelper
+    val stopwords_df = mySqlHelper.getDataframeFromTable(sqlContext, "stopwords")
+
+    //    stopwords_df.show()
+    stopwords_df.sqlContext.sql("select name from stopwords").collect.foreach(x => println(x.getString(0)))
+
 
     sc.stop()
-  }
-
-}
-
-class MySqlExample {
-
-  def runMySql(sc: SparkContext) {
-    
-    val mysqlUrl = "jdbc:mysql://192.168.10.33/master";
-    val tableName = "stopwords"
-    val userName = "hadoop"
-    val passwd = "hadoop"
-
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-
-    val dataframe_mysql = sqlContext.read.format("jdbc")
-      .option("url", mysqlUrl)
-      .option("driver", "com.mysql.jdbc.Driver")
-      .option("dbtable", tableName)
-      .option("user", userName)
-      .option("password", passwd)
-      .load()
-
-    dataframe_mysql.registerTempTable("stopwords")
-    //    dataframe_mysql.show()
-    dataframe_mysql.sqlContext.sql("select name from stopwords").collect.foreach(println)
-    
   }
 
 }

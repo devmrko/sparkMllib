@@ -128,9 +128,9 @@ class NaiveBayesExample {
 
     val numFeatures = 1000
     val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
-    val naiveBayesTrainedModel = createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, false)
+    val naiveBayesTrainedModel = createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, true)
 
-    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel")
-    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel")
+    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel01")
+    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel01")
   }
 }

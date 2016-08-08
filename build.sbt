@@ -1,4 +1,4 @@
-name := "SparkApp"
+name := "SparkMllibApp"
 
 version := "1.0"
 
