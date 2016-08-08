@@ -86,10 +86,21 @@ object SparkMllibApp {
     println(">>>>> spamSentense >>>>>")
     spamList.foreach(println)
 
-    val naiveBayesExample = new NaiveBayesExample
-    naiveBayesExample.runNaiveBayesModelForPjt(sc, normalList, spamList)
+    runNaiveBayesModelForPjt(sc, normalList, spamList)
 
     sc.stop()
+  }
+  
+  def runNaiveBayesModelForPjt(sc: SparkContext, spamIterable: Iterable[String], hamIterable: Iterable[String]) {
+
+    val numFeatures = 1000
+    val mllibHandlingHelper = new MllibHandlingHelper(numFeatures)
+    val naiveBayesHelper = new NaiveBayesHelper
+    
+    val naiveBayesTrainedModel = naiveBayesHelper.createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, true)
+
+    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel01")
+//    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel01")
   }
 
 }

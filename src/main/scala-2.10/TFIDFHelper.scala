@@ -5,52 +5,17 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.ml.feature.{ IDF, Tokenizer }
 import org.apache.spark.ml.feature.HashingTF
 
-object TFIDFApp {
+class TFIDFHelper {
 
-  def main(args: Array[String]) {
-
-    val conf = new SparkConf()
-
-    if (args.isEmpty) {
-      conf.setAppName("SparkApp").setMaster("local")
-      println(">>>>> IDE development mode >>>>>")
-
-    } else if (args(0).equals("cluster")) {
-      println(">>>>> cluster mode >>>>>")
-
-    }
-
-    val sc = new SparkContext(conf)
-    val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-    import sqlContext.implicits._
-
-    var readJsonFileInfo = "input/spam"
-    val jsonRDD = sc.textFile(readJsonFileInfo)
-
-    val tFIDFExample = new TFIDFExample
-    tFIDFExample.runTFIDF(sc, jsonRDD)
-
-    sc.stop()
-  }
-
-}
-
-class TFIDFExample {
-
-  def runTFIDF(sc: SparkContext, jsonRDD: RDD[String]) {
+  def runTFIDF(sc: SparkContext, sentenceData: Seq[(Int, String)]) {
 
     val sqlContext = new org.apache.spark.sql.SQLContext(sc)
     import sqlContext.implicits._
-
-    val sentenceData = sqlContext.createDataFrame(Seq(
-      (0, "Hi I heard about Spark"),
-      (0, "I wish Java could use case classes"),
-      (1, "Logistic regression models are neat"))).toDF("label", "sentence")
 
     // declare tokenizer
     val tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words")
     // put a dataframe made by mock of query result to tokenize sentenc 
-    val wordsData = tokenizer.transform(sentenceData)
+    val wordsData = tokenizer.transform(sentenceData.toDF("label", "sentence"))
 
     println(">>>>> tokenizer result >>>>>")
     wordsData.foreach(println)
