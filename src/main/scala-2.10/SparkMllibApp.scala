@@ -99,7 +99,7 @@ object SparkMllibApp {
     
     val naiveBayesTrainedModel = naiveBayesHelper.createNaiveBayesModel(sc, mllibHandlingHelper, spamIterable, hamIterable, 0.7, 1100L, true)
 
-    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel01")
+    naiveBayesTrainedModel.save(sc, "target/tmp/myNaiveBayesModel02")
 //    val sameModel = NaiveBayesModel.load(sc, "target/tmp/myNaiveBayesModel01")
   }
 
