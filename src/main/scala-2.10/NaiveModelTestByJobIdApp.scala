@@ -4,7 +4,7 @@ import java.sql.{ Connection, DriverManager, ResultSet };
 import org.apache.spark.mllib.classification.{ NaiveBayes, NaiveBayesModel, LogisticRegressionModel }
 import scala.collection.mutable.ListBuffer
 
-object NaiveModelTestApp {
+object NaiveModelTestByJobIdApp {
 
   def main(args: Array[String]) {
 
